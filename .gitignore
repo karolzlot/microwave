@@ -1,0 +1,12 @@
+.venv/
+.vscode/
+
+*.md
+*.txt
+
+local/
+__pycache__/
+
+.env
+
+*.log
