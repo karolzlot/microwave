@@ -15,6 +15,7 @@ websockets = "^11.0.3"
 redis = "^4.6.0"
 uvicorn = "^0.22.0"
 loguru = "^0.7.0"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
