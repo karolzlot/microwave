@@ -64,9 +64,9 @@ async def listen_for_redis_changes(websocket: WebSocket):
         microwave_data = await microwave.get_microwave_data()
 
         await websocket.send_text(
-            f"""<div id="power">{ microwave_data["power"] }</div>
-<div id="counter">{ microwave_data["counter"] }</div>
-<div id="status">{ microwave_data["state"] }</div>"""
+            f"""<span id="power">{ microwave_data["power"] } </span>
+<span id="counter">{ microwave_data["counter"] } </span>
+<span id="status">{ microwave_data["state"] } </span>"""
         )  # TODO: make counter more human readable (e.g. 1:30 instead of 90)
         logger.info(f"State broadcast: {microwave_data}")
 
