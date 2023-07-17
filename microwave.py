@@ -1,5 +1,6 @@
 from typing import Literal, TypedDict
 
+from loguru import logger
 from redis import asyncio as aioredis
 
 from main import redis
@@ -11,6 +12,9 @@ class MicrowaveDict(TypedDict):
     power: int
     counter: int
     state: State
+
+
+CHANNEL_NAME = "microwave_updates"
 
 
 class Microwave:
@@ -72,10 +76,16 @@ class Microwave:
                     pipe.set("microwave_power", new_power)
                     results: list = await pipe.execute()
                 assert all(results)
+                await self.notify_subscribers(
+                    f"Power adjusted. Old power: {current_power} New power: {new_power}"
+                )
                 break
             except aioredis.WatchError:
                 retries -= 1
                 continue
+        else:
+            logger.error("Could not adjust power")
+            raise Exception("Could not adjust power")
 
     async def adjust_counter(self, increment=10) -> None:
         """Adjust counter by increment (increment can be negative, but value after can't be negative so `incrby` is not suitable)"""
@@ -95,10 +105,16 @@ class Microwave:
                     pipe.set("microwave_counter", new_counter)
                     results: list = await pipe.execute()
                 assert all(results)
+                await self.notify_subscribers(
+                    f"Counter adjusted. Old counter: {current_counter} New counter: {new_counter}"
+                )
                 break
             except aioredis.WatchError:
                 retries -= 1
                 continue
+        else:
+            logger.error("Could not adjust counter")
+            raise Exception("Could not adjust counter")
 
     async def cancel(self) -> None:
         """Cancel microwave, set `power` and `counter` to 0, which will also set state to 'OFF'"""
@@ -107,3 +123,9 @@ class Microwave:
             pipe.set("microwave_counter", 0)
             results: list = await pipe.execute()
         assert all(results)
+        await self.notify_subscribers("Microwave canceled. Power and Counter set to 0.")
+
+    async def notify_subscribers(self, message: str) -> None:
+        """Notify subscribers of changes"""
+        pubsub = await redis.publish(CHANNEL_NAME, message)
+        logger.info(f"Published message: '{message}' to '{pubsub}' subscribers")
