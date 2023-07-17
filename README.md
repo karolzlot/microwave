@@ -15,7 +15,7 @@ poetry install
 Run the application:
 
 ```
-python -m main
+poetry run uvicorn main:app --reload
 ```
 
 

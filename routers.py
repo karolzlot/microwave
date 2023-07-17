@@ -2,16 +2,19 @@ import asyncio
 import os
 
 import jwt
+from dotenv import load_dotenv
 from fastapi import APIRouter, Header, HTTPException, WebSocket
 from loguru import logger
 
 from microwave import CHANNEL_NAME, Microwave
 
-router = APIRouter()
-microwave = Microwave()
-
+load_dotenv()
 SECRET_KEY = os.environ["SECRET_KEY"]
 assert len(SECRET_KEY) > 10
+
+
+router = APIRouter()
+microwave = Microwave()
 
 
 def validate_jwt(x_token: str = Header(None)):
