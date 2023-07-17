@@ -1,6 +1,19 @@
 ## How to run
 
+Start redis:
 
-## Technical decisions
+```
+docker run --name redis-microwave1 -p 6379:6379 -d redis
+```
 
-- aioredis doesn't support the WATCH command out of the box, but it's still possible to achieve similar transacion-like functionality by using multi/exec transactions.
+Create a virtual environment and install dependencies (poetry is required):
+
+```
+poetry install
+```
+
+Run the application:
+
+```
+python -m main
+```
