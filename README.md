@@ -17,3 +17,11 @@ Run the application:
 ```
 python -m main
 ```
+
+
+## TODO:
+
+- [ ] Add more and better tests
+- [ ] Improve code organization / refactor
+- [ ] Add more documentation
+- [ ] Add CI/CD
