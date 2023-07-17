@@ -7,7 +7,7 @@ from microwave import Microwave
 
 @pytest.mark.asyncio
 async def test_get_power():
-    with patch("microwave.redis", new_callable=AsyncMock) as mock_redis:
+    with patch("redis_connection.redis", new_callable=AsyncMock) as mock_redis:
         mock_redis.get.return_value = "50"
         microwave = Microwave()
         power = await microwave.get_power()
@@ -17,7 +17,7 @@ async def test_get_power():
 
 @pytest.mark.asyncio
 async def test_get_counter():
-    with patch("microwave.redis", new_callable=AsyncMock) as mock_redis:
+    with patch("redis_connection.redis", new_callable=AsyncMock) as mock_redis:
         mock_redis.get.return_value = "30"
         microwave = Microwave()
         counter = await microwave.get_counter()
@@ -28,7 +28,7 @@ async def test_get_counter():
 @pytest.mark.asyncio
 async def test_get_state_on():
     with patch(
-        "microwave.Microwave.get_microwave", new_callable=AsyncMock
+        "microwave.Microwave.get_microwave_data", new_callable=AsyncMock
     ) as mock_get_microwave:
         mock_get_microwave.return_value = {"power": 50, "counter": 30, "state": "ON"}
         microwave = Microwave()
@@ -39,7 +39,7 @@ async def test_get_state_on():
 @pytest.mark.asyncio
 async def test_get_state_off():
     with patch(
-        "microwave.Microwave.get_microwave", new_callable=AsyncMock
+        "microwave.Microwave.get_microwave_data", new_callable=AsyncMock
     ) as mock_get_microwave:
         mock_get_microwave.return_value = {"power": 0, "counter": 0, "state": "OFF"}
         microwave = Microwave()

@@ -3,10 +3,10 @@ import asyncio
 from redis import asyncio as aioredis
 
 
-async def connect_to_redis():
+def connect_to_redis():
     global redis
-    redis = await aioredis.from_url("redis://localhost")
+    redis = aioredis.from_url("redis://localhost")
     return redis
 
 
-redis = asyncio.run(connect_to_redis())
+redis = connect_to_redis()
