@@ -39,8 +39,12 @@ async def listen_for_incoming_actions(websocket: WebSocket):
             await microwave.adjust_counter(-10)
         elif data["action"] == "cancel":
             if await microwave.get_state() == "ON":
-                validate_jwt(data["token"])
-                await microwave.cancel()
+                try:
+                    validate_jwt(data["jwt_token"])
+                except:
+                    pass
+                else:
+                    await microwave.cancel()
         else:
             logger.warning(f"Unknown action: {data['action']}")
 
