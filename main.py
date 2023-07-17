@@ -1,18 +1,17 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
-# from routers import router
-from redis import asyncio as aioredis
+load_dotenv()
 
 app = FastAPI()
 
-# app.include_router(router)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@app.on_event("startup")
-async def startup_event() -> None:
-    global redis
-    redis = await aioredis.from_url("redis://localhost")
+from routers import router
 
+app.include_router(router)
 
 if __name__ == "__main__":
     import uvicorn

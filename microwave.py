@@ -3,8 +3,6 @@ from typing import Literal, TypedDict
 from loguru import logger
 from redis import asyncio as aioredis
 
-from main import redis
-
 State = Literal["ON", "OFF"]
 
 
@@ -26,19 +24,24 @@ class Microwave:
     `state` can be "ON" or "OFF" and is derived from current `power` and `counter` (it is not stored in redis)
     """
 
+    def __init__(self):
+        from redis_connection import redis
+
+        self.redis = redis
+
     async def get_power(self) -> int:
-        power = int(await redis.get("microwave_power") or 0)
+        power = int(await self.redis.get("microwave_power") or 0)
         assert power >= 0
         return power
 
     async def get_counter(self) -> int:
-        counter = int(await redis.get("microwave_counter") or 0)
+        counter = int(await self.redis.get("microwave_counter") or 0)
         assert counter >= 0
         return counter
 
-    async def get_microwave(self) -> MicrowaveDict:
+    async def get_microwave_data(self) -> MicrowaveDict:
         """Get all microwave data"""
-        async with redis.pipeline(transaction=True) as pipe:
+        async with self.redis.pipeline(transaction=True) as pipe:
             pipe.get("microwave_power")
             pipe.get("microwave_counter")
             power_result, counter_result = await pipe.execute()
@@ -55,15 +58,15 @@ class Microwave:
 
     async def get_state(self) -> State:
         """State is derived from current power and counter"""
-        microwave: MicrowaveDict = await self.get_microwave()
+        microwave: MicrowaveDict = await self.get_microwave_data()
         return microwave["state"]
 
     async def adjust_power(self, increment=10) -> None:
-        """Adjust power by increment (increment can be negative, but value after can't be negative so `incrby` is not suitable)"""
+        """Adjust power by increment (increment can be negative, but value after can't be negative so `incrby` is not suitable) (also power can't be higher than 100)"""
         retries = 10
         while retries:
             try:
-                async with redis.pipeline(transaction=True) as pipe:
+                async with self.redis.pipeline(transaction=True) as pipe:
                     await pipe.watch("microwave_power")
                     current_power = int(await pipe.get("microwave_power") or 0)
                     assert current_power >= 0
@@ -73,6 +76,8 @@ class Microwave:
                     new_power: int = current_power + increment
                     if new_power < 0:
                         new_power = 0
+                    elif new_power > 100:
+                        new_power = 100
                     pipe.set("microwave_power", new_power)
                     results: list = await pipe.execute()
                 assert all(results)
@@ -92,7 +97,7 @@ class Microwave:
         retries = 10
         while retries:
             try:
-                async with redis.pipeline(transaction=True) as pipe:
+                async with self.redis.pipeline(transaction=True) as pipe:
                     await pipe.watch("microwave_counter")
                     current_counter = int(await pipe.get("microwave_counter") or 0)
                     assert current_counter >= 0
@@ -118,7 +123,7 @@ class Microwave:
 
     async def cancel(self) -> None:
         """Cancel microwave, set `power` and `counter` to 0, which will also set state to 'OFF'"""
-        async with redis.pipeline(transaction=True) as pipe:
+        async with self.redis.pipeline(transaction=True) as pipe:
             pipe.set("microwave_power", 0)
             pipe.set("microwave_counter", 0)
             results: list = await pipe.execute()
@@ -127,5 +132,5 @@ class Microwave:
 
     async def notify_subscribers(self, message: str) -> None:
         """Notify subscribers of changes"""
-        pubsub = await redis.publish(CHANNEL_NAME, message)
+        pubsub = await self.redis.publish(CHANNEL_NAME, message)
         logger.info(f"Published message: '{message}' to '{pubsub}' subscribers")
