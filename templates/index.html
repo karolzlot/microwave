@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Office Microwave</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+</head>
+<body>
+    <div hx-ext="ws" ws-connect="/websocket">
+        <h1>Microwave State</h1>
+        <div id="microwaveState">
+            <p>Power: <span id="power"> {{ microwave_data.power }} </span>%</p>
+            <p>Counter: <span id="counter"> {{ microwave_data.counter }} </span>s</p>
+            <p>Status: <span id="status"> {{ microwave_data.state }} </span></p>
+        </div>
+
+        <h2>Controls</h2>
+
+        <form id="form" ws-send>
+            <input hidden name="action" value='power+10'>
+            <button ws-send>Power +10%</button>
+        </form>
+
+        <form id="form" ws-send>
+            <input hidden name="action" value='power-10'>
+            <button ws-send>Power -10%</button>
+        </form>
+
+        <form id="form" ws-send>
+            <input hidden name="action" value='counter+10'>
+            <button ws-send>Counter +10s</button>
+        </form>
+
+        <form id="form" ws-send>
+            <input hidden name="action" value='counter-10'>
+            <button ws-send>Counter -10s</button>
+        </form>
+
+        <h2>Cancel Operation</h2>
+        <p>Please input your JWT token to cancel the operation:</p>
+        <form id="form" ws-send>
+            <input hidden name="action" value='cancel'>
+            <input type="text" name="jwt_token" placeholder="Your JWT token here">
+            <button ws-send>Cancel</button>
+        </form>
+
+    </div>
+</body>
+</html>
