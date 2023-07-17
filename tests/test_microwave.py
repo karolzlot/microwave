@@ -5,9 +5,8 @@ import pytest
 from microwave import Microwave
 
 
-@patch("main.redis", new_callable=MagicMock)
 @pytest.mark.asyncio
-async def test_get_power(mock_redis):
+async def test_get_power():
     with patch("microwave.redis", new_callable=AsyncMock) as mock_redis:
         mock_redis.get.return_value = "50"
         microwave = Microwave()
@@ -16,9 +15,8 @@ async def test_get_power(mock_redis):
         mock_redis.get.assert_awaited_once_with("microwave_power")
 
 
-@patch("main.redis", new_callable=MagicMock)
 @pytest.mark.asyncio
-async def test_get_counter(mock_redis):
+async def test_get_counter():
     with patch("microwave.redis", new_callable=AsyncMock) as mock_redis:
         mock_redis.get.return_value = "30"
         microwave = Microwave()
@@ -27,9 +25,8 @@ async def test_get_counter(mock_redis):
         mock_redis.get.assert_awaited_once_with("microwave_counter")
 
 
-@patch("main.redis", new_callable=MagicMock)
 @pytest.mark.asyncio
-async def test_get_state_on(mock_redis):
+async def test_get_state_on():
     with patch(
         "microwave.Microwave.get_microwave", new_callable=AsyncMock
     ) as mock_get_microwave:
@@ -39,9 +36,8 @@ async def test_get_state_on(mock_redis):
         assert state == "ON"
 
 
-@patch("main.redis", new_callable=MagicMock)
 @pytest.mark.asyncio
-async def test_get_state_off(mock_redis):
+async def test_get_state_off():
     with patch(
         "microwave.Microwave.get_microwave", new_callable=AsyncMock
     ) as mock_get_microwave:
